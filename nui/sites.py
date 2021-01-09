@@ -1,19 +1,12 @@
 from _weakrefset import WeakSet
 from functools import update_wrapper
-
 from django.apps import apps
-# from django.contrib.admin import actions
-from django.contrib.admin import actions
 from django.contrib.admin.sites import AdminSite
-from django.template.response import TemplateResponse
 from django.utils.functional import LazyObject
 from django.utils.module_loading import import_string
 from django.utils.translation import gettext_lazy
-from django.views.decorators.cache import never_cache
 from django.conf import settings
 import collections
-from django.http.response import JsonResponse
-from django.core.exceptions import ValidationError
 
 all_sites = WeakSet()
 
@@ -45,13 +38,6 @@ class NuiAdminSite(AdminSite):
 
     # Text to put at the top of the admin index page.
     index_title = gettext_lazy('Site administration')
-
-    # def __init__(self, name='nui'):
-    #     self._registry = {}  # model_class class -> admin_class instance
-    #     self.name = name
-    #     self._actions = {'delete_selected': actions.delete_selected}
-    #     self._global_actions = self._actions.copy()
-    #     all_sites.add(self)
 
     def __init__(self, name='nui'):
         super().__init__(name)
@@ -129,23 +115,34 @@ class NuiAdminSite(AdminSite):
         # and django.contrib.contenttypes.views imports ContentType.
         from django.contrib.contenttypes import views as contenttype_views
         from django.urls import include, path, re_path
-        from nui.views import UserLoginAPIView, UserSidebarAPIView
-
         def wrap(view, cacheable=False):
             def wrapper(*args, **kwargs):
                 return self.admin_view(view, cacheable)(*args, **kwargs)
+
             wrapper.admin_site = self
             return update_wrapper(wrapper, view)
 
         # Admin-site-wide views.
         urlpatterns = [
-            path('login/', UserLoginAPIView.as_view()),
-            path('sidebar/', UserSidebarAPIView.as_view()),
+            path('', wrap(self.index), name='index'),
+            path('login/', self.login, name='login'),
+            path('logout/', wrap(self.logout), name='logout'),
+            path('password_change/', wrap(self.password_change, cacheable=True), name='password_change'),
+            path(
+                'password_change/done/',
+                wrap(self.password_change_done, cacheable=True),
+                name='password_change_done',
+            ),
+            path('jsi18n/', wrap(self.i18n_javascript, cacheable=True), name='jsi18n'),
+            path(
+                'r/<int:content_type_id>/<path:object_id>/',
+                wrap(contenttype_views.shortcut),
+                name='view_on_site',
+            ),
         ]
 
-        # Add in each model's views, and create a list of valid URLS for the
-        # app_index
         valid_app_labels = []
+        from nui.views import UserLoginAPIView, UserSidebarAPIView, ModelList
         for model, model_admin in self._registry.items():
             urlpatterns += [
                 path('%s/%s/' % (model._meta.app_label, model._meta.model_name), include(model_admin.urls)),
@@ -153,14 +150,21 @@ class NuiAdminSite(AdminSite):
             if model._meta.app_label not in valid_app_labels:
                 valid_app_labels.append(model._meta.app_label)
 
-        # If there were ModelAdmins registered, we should have a list of app
-        # labels for which we need to allow access to the app_index view,
         if valid_app_labels:
             regex = r'^(?P<app_label>' + '|'.join(valid_app_labels) + ')/$'
             urlpatterns += [
                 re_path(regex, wrap(self.app_index), name='app_list'),
             ]
+        urlpatterns += [
+            path('nui/login/', UserLoginAPIView.as_view()),
+            path('nui/sidebar/', UserSidebarAPIView.as_view()),
+            path('nui/<str:app_label>/<str:model_name>/', ModelList.as_view()),
+        ]
         return urlpatterns
+
+    @property
+    def urls(self):
+        return self.get_urls(), 'admin', self.name
 
 
 class DefaultAdminSite(LazyObject):

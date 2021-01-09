@@ -17,7 +17,6 @@ export default {
   },
   loginGet: function(obj, data) {
     const url = urlList.LoginUrl;
-    console.log(url);
     http.nlyGetList(url, data).then(
       response => {
         const { site_title, site_header, title } = response;

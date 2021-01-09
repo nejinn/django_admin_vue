@@ -5,7 +5,7 @@ from django.contrib.admin.filters import (
     RelatedFieldListFilter, RelatedOnlyFieldListFilter, SimpleListFilter,
 )
 from nui.options import (
-    HORIZONTAL, VERTICAL, ModelAdmin, StackedInline, TabularInline,
+    HORIZONTAL, VERTICAL, NuiModelAdmin, NuiStackedInline, NuiTabularInline,
 )
 from nui.sites import NuiAdminSite, site
 # from django.contrib.admin.sites import site
@@ -13,8 +13,8 @@ from nui.sites import NuiAdminSite, site
 from django.utils.module_loading import autodiscover_modules
 
 __all__ = [
-    "register", "ModelAdmin", "HORIZONTAL", "VERTICAL", "StackedInline",
-    "TabularInline", "NuiAdminSite", "site", "ListFilter", "SimpleListFilter",
+    "register", "NuiModelAdmin", "HORIZONTAL", "VERTICAL", "NuiStackedInline",
+    "NuiTabularInline", "NuiAdminSite", "site", "ListFilter", "SimpleListFilter",
     "FieldListFilter", "BooleanFieldListFilter", "RelatedFieldListFilter",
     "ChoicesFieldListFilter", "DateFieldListFilter",
     "AllValuesFieldListFilter", "EmptyFieldListFilter",

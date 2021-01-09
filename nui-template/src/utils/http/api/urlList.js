@@ -1,4 +1,4 @@
-const ApiBaseUrl = "/nui_admin";
+const ApiBaseUrl = "/nui_admin/nui";
 
 export default {
   LoginUrl: `${ApiBaseUrl}/login/`,

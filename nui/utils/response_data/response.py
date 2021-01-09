@@ -1,5 +1,5 @@
 from rest_framework.response import Response
-from utils.response_msg.server_msg import STATUS_CODE_ERROR, OK
+from nui.utils.response_msg.server_msg import STATUS_CODE_ERROR, OK
 
 
 class ResponseDate(object):

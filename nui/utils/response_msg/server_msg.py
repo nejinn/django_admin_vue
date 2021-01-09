@@ -8,3 +8,4 @@ LOGIN_USER_NOT_EXIST = {'code': 100001, 'msg': "用户不存在"}
 LOGIN_USER_IS_ACTIVE = {'code': 100002, 'msg': "用户已停用"}
 LOGIN_USER_IS_STAFF = {'code': 100003, 'msg': "用户不能登录admin"}
 LOGIN_USER_ACCOUNT_ERROR = {'code': 100004, 'msg': "账号或者密码错误"}
+REGISTER_MODEL_ERROR = {'code': 1000045, 'msg': "model 没有注册"}
